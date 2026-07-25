@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Wifi, WifiOff, ShieldCheck, Car, Package, Users, Plus, Store, LogOut, User } from 'lucide-react';
+import { Wifi, WifiOff, ShieldCheck, Car, Package, Users, Plus, Store, LogOut } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -14,8 +14,7 @@ export const Header: React.FC = () => {
   const { triggerHaptic } = useHaptic();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  const oficinas = osService.getOficinas();
-  const [activeOficina, setActiveOficina] = useState<Oficina>(osService.getActiveOficina());
+  const activeOficina: Oficina = osService.getActiveOficina();
   const currentUser: UsuarioOficina | null = osService.getActiveUser();
 
   useEffect(() => {
@@ -36,55 +35,36 @@ export const Header: React.FC = () => {
     navigate(path);
   };
 
-  const handleOficinaChange = (oficinaId: string) => {
-    triggerHaptic('medium');
-    osService.setActiveOficina(oficinaId);
-    const found = oficinas.find((o) => o.id === oficinaId);
-    if (found) setActiveOficina(found);
-    window.location.reload();
-  };
-
   const handleLogout = () => {
     triggerHaptic('warning');
     osService.logoutUser();
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border px-4 md:px-8 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-        {/* Brand Logo & Workshop Switcher */}
+        {/* Brand Logo & Active Workshop Name (No Switcher for Security) */}
         <div className="flex items-center gap-3">
           <div
-            onClick={() => handleNav('/')}
+            onClick={() => handleNav('/patio')}
             className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg border border-primary/40 group-hover:border-primary transition-all glow-primary-sm flex-none cursor-pointer"
           >
             <img src={logoIcon} alt="Mão na Roda Logo" className="w-full h-full object-cover" />
           </div>
 
-          <div className="space-y-0.5">
+          <div className="space-y-0.5 min-w-0">
             <h1
-              onClick={() => handleNav('/')}
+              onClick={() => handleNav('/patio')}
               className="text-base sm:text-lg font-bold font-display uppercase tracking-wider leading-none text-text-main flex items-center gap-1.5 cursor-pointer"
             >
               Mão na Roda
             </h1>
 
-            {/* Workshop Selector */}
-            <div className="flex items-center gap-1 text-xs">
-              <Store className="w-3 h-3 text-primary flex-none" />
-              <select
-                value={activeOficina.id}
-                onChange={(e) => handleOficinaChange(e.target.value)}
-                className="bg-transparent text-[11px] font-mono text-text-muted hover:text-text-main focus:outline-none cursor-pointer underline decoration-primary/40 truncate max-w-[180px] sm:max-w-[240px]"
-                title="Trocar de Oficina"
-              >
-                {oficinas.map((of) => (
-                  <option key={of.id} value={of.id} className="bg-surface-card text-text-main">
-                    {of.nome}
-                  </option>
-                ))}
-              </select>
+            {/* Fixed Workshop Name badge (Isolated Tenant) */}
+            <div className="flex items-center gap-1 text-xs text-text-muted font-mono font-semibold truncate max-w-[180px] sm:max-w-[280px]">
+              <Store className="w-3.5 h-3.5 text-primary flex-none" />
+              <span className="truncate">{activeOficina.nome}</span>
             </div>
           </div>
         </div>
@@ -94,7 +74,7 @@ export const Header: React.FC = () => {
           <button
             onClick={() => handleNav('/patio')}
             className={`px-4 py-2 rounded-lg font-display uppercase tracking-wider text-xs font-semibold flex items-center gap-2 transition-all ${
-              location.pathname === '/patio' || location.pathname === '/' ? 'bg-primary text-black shadow-md' : 'text-text-muted hover:text-text-main hover:bg-surface-card'
+              location.pathname === '/patio' ? 'bg-primary text-black shadow-md' : 'text-text-muted hover:text-text-main hover:bg-surface-card'
             }`}
           >
             <Car className="w-4 h-4" /> Início / Veículos

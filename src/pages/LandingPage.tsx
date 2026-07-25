@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { RegisterOficinaModal } from '@/components/shared/RegisterOficinaModal';
 import { LoginModal } from '@/components/shared/LoginModal';
+import { osService } from '@/services/osService';
 import logoFull from '@/assets/logo-full.png';
 import logoIcon from '@/assets/logo-icon.png';
 import {
@@ -25,6 +26,14 @@ export const LandingPage: React.FC = () => {
   const { triggerHaptic } = useHaptic();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Auto-redirect to workshop dashboard (/patio) if user is already logged in
+  useEffect(() => {
+    const activeUser = osService.getActiveUser();
+    if (activeUser) {
+      navigate('/patio', { replace: true });
+    }
+  }, [navigate]);
 
   const handleOpenRegister = () => {
     triggerHaptic('medium');
