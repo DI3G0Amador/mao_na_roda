@@ -4,17 +4,19 @@ import { BottomSheet } from '@/components/ui/BottomSheet';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { osService } from '@/services/osService';
-import { Store, Phone, User, MapPin, CheckCircle2, Navigation, Loader2 } from 'lucide-react';
+import { Store, Phone, User, MapPin, CheckCircle2, Navigation, Loader2, Mail, Lock } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 
 interface RegisterOficinaModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSwitchToLogin?: () => void;
 }
 
 export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
   isOpen,
   onClose,
+  onSwitchToLogin,
 }) => {
   const navigate = useNavigate();
   const { triggerHaptic } = useHaptic();
@@ -22,11 +24,12 @@ export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
   const [nomeOficina, setNomeOficina] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [nomeResponsavel, setNomeResponsavel] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
   const [cidade, setCidade] = useState('');
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
 
-  // Auto-detect city via IP or GPS on modal open
   useEffect(() => {
     if (isOpen && !cidade) {
       detectCityByIP();
@@ -44,7 +47,7 @@ export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
         }
       }
     } catch {
-      // Ignore fallback if network blocks IP API
+      // Ignore
     } finally {
       setLocating(false);
     }
@@ -81,36 +84,42 @@ export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
         }
       },
       () => {
-        // Fallback to IP if GPS permission is denied
         detectCityByIP();
       },
       { timeout: 8000 }
     );
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nomeOficina.trim()) return;
+    if (!nomeOficina.trim() || !email.trim() || !senha.trim()) {
+      alert('Preencha os campos obrigatórios (*)');
+      return;
+    }
+
+    if (senha.length < 6) {
+      alert('A senha deve conter no mínimo 6 caracteres.');
+      return;
+    }
 
     triggerHaptic('success');
     setLoading(true);
 
     const cleanWa = whatsapp.replace(/\D/g, '');
     const formattedWa = cleanWa.startsWith('55') ? cleanWa : `55${cleanWa}`;
-    const slug = nomeOficina.toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-    osService.registerNewOficina({
+    await osService.registerNewOficina({
       nome: nomeOficina.trim(),
-      slug,
       whatsapp: formattedWa || '5511999999999',
-      endereco: cidade.trim() ? cidade.trim() : 'Brasil',
+      nomeResponsavel: nomeResponsavel.trim() || 'Admin da Oficina',
+      email: email.trim(),
+      senha,
+      cidade: cidade.trim(),
     });
 
-    setTimeout(() => {
-      setLoading(false);
-      onClose();
-      navigate('/patio');
-    }, 600);
+    setLoading(false);
+    onClose();
+    navigate('/patio');
   };
 
   return (
@@ -118,9 +127,9 @@ export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="🚀 Cadastrar Minha Oficina"
-      subtitle="Crie a conta da sua oficina em menos de 1 minuto"
+      subtitle="Crie a conta da sua oficina e defina seus dados de acesso"
     >
-      <form onSubmit={handleRegister} className="space-y-4 pt-2">
+      <form onSubmit={handleRegister} className="space-y-3.5 pt-1">
         <Input
           label="Nome da Oficina *"
           placeholder="Ex: Oficina Rústica Auto Center"
@@ -130,24 +139,51 @@ export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
           autoFocus
         />
 
-        <Input
-          label="Seu Nome / Responsável *"
-          placeholder="Ex: Roberto da Silva"
-          value={nomeResponsavel}
-          onChange={(e) => setNomeResponsavel(e.target.value)}
-          leftIcon={<User className="w-5 h-5 text-text-muted" />}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Input
+            label="Seu Nome / Responsável *"
+            placeholder="Ex: Roberto da Silva"
+            value={nomeResponsavel}
+            onChange={(e) => setNomeResponsavel(e.target.value)}
+            leftIcon={<User className="w-5 h-5 text-text-muted" />}
+          />
+          <Input
+            label="WhatsApp da Oficina (DDD + Número) *"
+            placeholder="Ex: 11988776655"
+            type="tel"
+            inputMode="tel"
+            value={whatsapp}
+            onChange={(e) => setWhatsapp(e.target.value)}
+            leftIcon={<Phone className="w-5 h-5 text-emerald-400" />}
+          />
+        </div>
 
-        <Input
-          label="WhatsApp da Oficina (DDD + Número) *"
-          placeholder="Ex: 11988776655"
-          type="tel"
-          inputMode="tel"
-          value={whatsapp}
-          onChange={(e) => setWhatsapp(e.target.value)}
-          leftIcon={<Phone className="w-5 h-5 text-emerald-400" />}
-          helperText="Os comprovantes e orçamentos serão enviados por este número"
-        />
+        {/* Credentials for Admin Login */}
+        <div className="p-3.5 bg-surface border border-primary/30 rounded-2xl space-y-3 shadow-inner">
+          <span className="text-[11px] font-display uppercase tracking-wider font-bold text-primary block">
+            🔑 Credenciais de Acesso (Login do Admin)
+          </span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="E-mail de Acesso *"
+              placeholder="Ex: contato@oficinarustica.com"
+              type="email"
+              inputMode="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              leftIcon={<Mail className="w-4 h-4 text-primary" />}
+            />
+            <Input
+              label="Senha de Acesso *"
+              placeholder="Mínimo 6 caracteres"
+              type="password"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              leftIcon={<Lock className="w-4 h-4 text-primary" />}
+            />
+          </div>
+        </div>
 
         {/* Location Input with Auto-detect GPS button */}
         <div className="space-y-1">
@@ -180,7 +216,7 @@ export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
           />
         </div>
 
-        <div className="pt-3">
+        <div className="pt-2 space-y-2">
           <Button
             type="submit"
             variant="primary"
@@ -194,10 +230,22 @@ export const RegisterOficinaModal: React.FC<RegisterOficinaModalProps> = ({
               <span>Criando Oficina...</span>
             ) : (
               <span className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" /> Criar Oficina & Começar
+                <CheckCircle2 className="w-5 h-5" /> Criar Oficina & Entrar
               </span>
             )}
           </Button>
+
+          {onSwitchToLogin && (
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-xs text-text-muted hover:text-primary transition-colors font-mono"
+              >
+                Já tem uma oficina cadastrada? <strong className="text-text-main underline">Fazer Login</strong>
+              </button>
+            </div>
+          )}
         </div>
       </form>
     </BottomSheet>

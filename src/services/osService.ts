@@ -1,4 +1,4 @@
-import { OrdemServico, Cliente, Peca, DashboardStats, Oficina } from '@/types';
+import { OrdemServico, Cliente, Peca, DashboardStats, Oficina, UsuarioOficina } from '@/types';
 import { calculateWarrantyDate } from '@/lib/utils';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
@@ -7,6 +7,8 @@ const LOCAL_STORAGE_PARTS = 'mao_na_roda_parts_v2';
 const LOCAL_STORAGE_CLIENTS = 'mao_na_roda_clients_v2';
 const LOCAL_STORAGE_OFICINA_ACTIVE = 'mao_na_roda_active_oficina';
 const LOCAL_STORAGE_OFICINAS_LIST = 'mao_na_roda_oficinas_list_v2';
+const LOCAL_STORAGE_USER_ACTIVE = 'mao_na_roda_active_user';
+const LOCAL_STORAGE_USERS_LIST = 'mao_na_roda_users_list_v2';
 
 export const INITIAL_OFICINAS: Oficina[] = [
   {
@@ -22,6 +24,17 @@ export const INITIAL_OFICINAS: Oficina[] = [
     slug: 'garagem-central',
     whatsapp: '5511977665544',
     endereco: 'Rua das Oficinas, 420 - Campinas, SP',
+  },
+];
+
+export const INITIAL_USERS: (UsuarioOficina & { senhaHash?: string })[] = [
+  {
+    id: 'u-1',
+    oficina_id: INITIAL_OFICINAS[0].id,
+    nome: 'Roberto da Silva',
+    email: 'admin@oficinarustica.com',
+    funcao: 'admin',
+    senhaHash: '123456',
   },
 ];
 
@@ -104,33 +117,6 @@ const INITIAL_MOCK_OS: OrdemServico[] = [
       { id: 'it-6', tipo: 'servico', descricao: 'Revisão Geral e Alinhamento 3D', quantidade: 1, valor_unitario: 550.00, valor_total: 550.00 },
     ],
   },
-  {
-    id: 'OS-2026-003',
-    oficina_id: INITIAL_OFICINAS[1].id,
-    cliente: MOCK_CLIENTS[2],
-    veiculo: {
-      id: 'v-3',
-      oficina_id: INITIAL_OFICINAS[1].id,
-      placa: 'RST-4421',
-      modelo: 'Fiat Toro Freedom 2.0 Diesel 4x4',
-      marca: 'Fiat',
-      ano: '2020',
-      km_atual: 89100,
-      cor: 'Vermelho Tribal',
-    },
-    status: 'aguardando_peca',
-    defeito_relatado: 'Vazamento leve de líquido de arrefecimento e pedal de embreagem pesado.',
-    diagnostico_tecnico: 'Reservatório de expansão trincado. Aguardando peça original Fiat.',
-    valor_total: 1250.00,
-    garantia_dias: 90,
-    data_garantia_limite: calculateWarrantyDate('2026-07-23', 90),
-    data_abertura: '2026-07-23T09:00:00.000Z',
-    vistorias: [],
-    itens: [
-      { id: 'it-7', tipo: 'peca', descricao: 'Kit Correia Dentada + Tensor (Gates)', quantidade: 1, valor_unitario: 280.00, valor_total: 280.00 },
-      { id: 'it-8', tipo: 'servico', descricao: 'Substituição de líquido de arrefecimento e pressurização', quantidade: 1, valor_unitario: 970.00, valor_total: 970.00 },
-    ],
-  },
 ];
 
 export const osService = {
@@ -158,32 +144,154 @@ export const osService = {
     localStorage.setItem(LOCAL_STORAGE_OFICINA_ACTIVE, oficinaId);
   },
 
-  registerNewOficina(data: Partial<Oficina>): Oficina {
-    const list = this.getOficinas();
+  getActiveUser(): UsuarioOficina | null {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_USER_ACTIVE);
+      if (stored) return JSON.parse(stored);
+      return INITIAL_USERS[0];
+    } catch {
+      return INITIAL_USERS[0];
+    }
+  },
+
+  getUsers(): (UsuarioOficina & { senhaHash?: string })[] {
+    try {
+      const stored = localStorage.getItem(LOCAL_STORAGE_USERS_LIST);
+      if (!stored) {
+        localStorage.setItem(LOCAL_STORAGE_USERS_LIST, JSON.stringify(INITIAL_USERS));
+        return INITIAL_USERS;
+      }
+      return JSON.parse(stored);
+    } catch {
+      return INITIAL_USERS;
+    }
+  },
+
+  async registerNewOficina(data: {
+    nome: string;
+    whatsapp: string;
+    nomeResponsavel: string;
+    email: string;
+    senha: string;
+    cidade?: string;
+  }): Promise<{ oficina: Oficina; user: UsuarioOficina }> {
+    const oficinas = this.getOficinas();
+    const users = this.getUsers();
+
+    const oficinaId = `of-${Date.now()}`;
+    const slug = data.nome.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
     const newOficina: Oficina = {
-      id: `of-${Date.now()}`,
-      nome: data.nome || 'Minha Oficina',
-      slug: data.slug || `oficina-${Date.now()}`,
-      whatsapp: data.whatsapp || '5511999999999',
-      endereco: data.endereco || '',
-      cnpj: data.cnpj || '',
+      id: oficinaId,
+      nome: data.nome,
+      slug,
+      whatsapp: data.whatsapp,
+      endereco: data.cidade || 'Brasil',
     };
 
-    list.unshift(newOficina);
-    localStorage.setItem(LOCAL_STORAGE_OFICINAS_LIST, JSON.stringify(list));
-    this.setActiveOficina(newOficina.id);
+    const newUser: UsuarioOficina & { senhaHash?: string } = {
+      id: `u-${Date.now()}`,
+      oficina_id: oficinaId,
+      nome: data.nomeResponsavel,
+      email: data.email.toLowerCase().trim(),
+      funcao: 'admin',
+      senhaHash: data.senha,
+    };
+
+    oficinas.unshift(newOficina);
+    users.unshift(newUser);
+
+    localStorage.setItem(LOCAL_STORAGE_OFICINAS_LIST, JSON.stringify(oficinas));
+    localStorage.setItem(LOCAL_STORAGE_USERS_LIST, JSON.stringify(users));
+    localStorage.setItem(LOCAL_STORAGE_OFICINA_ACTIVE, oficinaId);
+    localStorage.setItem(LOCAL_STORAGE_USER_ACTIVE, JSON.stringify(newUser));
 
     if (isSupabaseConfigured && supabase) {
-      supabase.from('oficinas').upsert({
-        nome: newOficina.nome,
-        slug: newOficina.slug,
-        whatsapp: newOficina.whatsapp,
-        endereco: newOficina.endereco,
-        cnpj: newOficina.cnpj,
-      }).then();
+      try {
+        const { data: supaUser } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.senha,
+        });
+
+        await supabase.from('oficinas').upsert({
+          id: oficinaId,
+          nome: newOficina.nome,
+          slug: newOficina.slug,
+          whatsapp: newOficina.whatsapp,
+          endereco: newOficina.endereco,
+        });
+
+        if (supaUser?.user) {
+          await supabase.from('usuarios_oficina').upsert({
+            id: supaUser.user.id,
+            oficina_id: oficinaId,
+            nome: data.nomeResponsavel,
+            funcao: 'admin',
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase Auth warning:', err);
+      }
     }
 
-    return newOficina;
+    return { oficina: newOficina, user: newUser };
+  },
+
+  async loginUser(data: { email: string; senha: string }): Promise<{ success: boolean; message?: string }> {
+    const cleanEmail = data.email.toLowerCase().trim();
+    const users = this.getUsers();
+
+    // 1. Check local storage users first
+    const foundUser = users.find((u) => u.email.toLowerCase().trim() === cleanEmail && u.senhaHash === data.senha);
+
+    if (foundUser) {
+      this.setActiveOficina(foundUser.oficina_id);
+      localStorage.setItem(LOCAL_STORAGE_USER_ACTIVE, JSON.stringify(foundUser));
+      return { success: true };
+    }
+
+    // 2. Try Supabase Auth if configured
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data: supaAuth, error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: data.senha,
+        });
+
+        if (!error && supaAuth?.user) {
+          const { data: supaPerfil } = await supabase
+            .from('usuarios_oficina')
+            .select('*, oficinas(*)')
+            .eq('id', supaAuth.user.id)
+            .single();
+
+          if (supaPerfil) {
+            const userObj: UsuarioOficina = {
+              id: supaPerfil.id,
+              oficina_id: supaPerfil.oficina_id,
+              nome: supaPerfil.nome,
+              email: cleanEmail,
+              funcao: supaPerfil.funcao || 'admin',
+            };
+
+            this.setActiveOficina(supaPerfil.oficina_id);
+            localStorage.setItem(LOCAL_STORAGE_USER_ACTIVE, JSON.stringify(userObj));
+            return { success: true };
+          }
+        }
+      } catch (err) {
+        console.warn('Supabase login warning:', err);
+      }
+    }
+
+    return { success: false, message: 'E-mail ou senha incorretos. Verifique suas credenciais.' };
+  },
+
+  logoutUser(): void {
+    localStorage.removeItem(LOCAL_STORAGE_USER_ACTIVE);
+    if (isSupabaseConfigured && supabase) {
+      supabase.auth.signOut().catch(console.warn);
+    }
   },
 
   getOSList(): OrdemServico[] {

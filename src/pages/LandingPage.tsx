@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { RegisterOficinaModal } from '@/components/shared/RegisterOficinaModal';
+import { LoginModal } from '@/components/shared/LoginModal';
 import logoFull from '@/assets/logo-full.png';
 import logoIcon from '@/assets/logo-icon.png';
 import {
@@ -15,6 +16,7 @@ import {
   Car,
   Store,
   Sparkles,
+  LogIn,
 } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 
@@ -22,10 +24,18 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { triggerHaptic } = useHaptic();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleOpenRegister = () => {
     triggerHaptic('medium');
+    setShowLoginModal(false);
     setShowRegisterModal(true);
+  };
+
+  const handleOpenLogin = () => {
+    triggerHaptic('light');
+    setShowRegisterModal(false);
+    setShowLoginModal(true);
   };
 
   const handleDemoAccess = () => {
@@ -52,12 +62,12 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={handleDemoAccess}
-              className="text-xs font-display uppercase tracking-wider text-text-muted hover:text-text-main font-semibold px-3 py-2 rounded-xl hover:bg-surface-card transition-colors hidden sm:block"
+              onClick={handleOpenLogin}
+              className="text-xs font-display uppercase tracking-wider text-text-muted hover:text-primary font-semibold px-3 py-2 rounded-xl hover:bg-surface-card transition-colors flex items-center gap-1.5"
             >
-              Testar Sistema Demo
+              <LogIn className="w-4 h-4" /> Entrar
             </button>
 
             <Button
@@ -91,7 +101,7 @@ export const LandingPage: React.FC = () => {
             </p>
 
             {/* Main Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
               <Button
                 variant="primary"
                 size="lg"
@@ -106,12 +116,11 @@ export const LandingPage: React.FC = () => {
               <Button
                 variant="secondary"
                 size="lg"
-                onClick={handleDemoAccess}
+                onClick={handleOpenLogin}
                 className="w-full sm:w-auto px-6 py-4 text-base gap-2"
               >
-                <Car className="w-5 h-5 text-primary" />
-                Testar Sistema Agora
-                <ArrowRight className="w-4 h-4" />
+                <LogIn className="w-5 h-5 text-primary" />
+                Entrar na Minha Oficina
               </Button>
             </div>
 
@@ -243,8 +252,8 @@ export const LandingPage: React.FC = () => {
             Mão na Roda — Gestão para Oficinas © 2026. Todos os direitos reservados.
           </p>
           <div className="flex items-center gap-4 font-display uppercase tracking-wider text-[11px]">
-            <button onClick={handleDemoAccess} className="hover:text-primary transition-colors">
-              Ver Sistema
+            <button onClick={handleOpenLogin} className="hover:text-primary transition-colors">
+              Entrar na Oficina
             </button>
             <button onClick={handleOpenRegister} className="text-primary font-bold hover:underline">
               + Cadastrar Oficina
@@ -253,10 +262,17 @@ export const LandingPage: React.FC = () => {
         </div>
       </footer>
 
-      {/* Register Modal */}
+      {/* Modals */}
       <RegisterOficinaModal
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={handleOpenLogin}
+      />
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToRegister={handleOpenRegister}
       />
     </div>
   );

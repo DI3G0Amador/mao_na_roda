@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Wifi, WifiOff, ShieldCheck, Car, Package, Users, Plus, Store } from 'lucide-react';
+import { Wifi, WifiOff, ShieldCheck, Car, Package, Users, Plus, Store, LogOut, User } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { useHaptic } from '@/hooks/useHaptic';
 import { osService } from '@/services/osService';
-import { Oficina } from '@/types';
+import { Oficina, UsuarioOficina } from '@/types';
 import logoIcon from '@/assets/logo-icon.png';
 
 export const Header: React.FC = () => {
@@ -16,6 +16,7 @@ export const Header: React.FC = () => {
 
   const oficinas = osService.getOficinas();
   const [activeOficina, setActiveOficina] = useState<Oficina>(osService.getActiveOficina());
+  const currentUser: UsuarioOficina | null = osService.getActiveUser();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -41,6 +42,12 @@ export const Header: React.FC = () => {
     const found = oficinas.find((o) => o.id === oficinaId);
     if (found) setActiveOficina(found);
     window.location.reload();
+  };
+
+  const handleLogout = () => {
+    triggerHaptic('warning');
+    osService.logoutUser();
+    navigate('/');
   };
 
   return (
@@ -110,7 +117,7 @@ export const Header: React.FC = () => {
           </button>
         </nav>
 
-        {/* Right Actions: + Nova OS Desktop Button & Connection Badge */}
+        {/* Right Actions: + Nova OS Desktop Button & User Menu */}
         <div className="flex items-center gap-3">
           <Button
             variant="primary"
@@ -134,8 +141,29 @@ export const Header: React.FC = () => {
             </span>
           </div>
 
-          <div className="w-9 h-9 rounded-full bg-surface-card border border-border flex items-center justify-center text-text-muted hover:text-text-main transition-colors hidden sm:flex">
-            <ShieldCheck className="w-4 h-4 text-primary" />
+          {/* User Account & Logout */}
+          <div className="flex items-center gap-2 border-l border-border pl-3">
+            {currentUser && (
+              <div className="hidden lg:block text-right">
+                <span className="text-xs font-bold text-text-main block leading-tight">
+                  {currentUser.nome}
+                </span>
+                <span className="text-[10px] text-text-muted font-mono block">
+                  {currentUser.email}
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={handleLogout}
+              className="p-2 text-text-muted hover:text-amber-400 hover:bg-surface-card rounded-xl border border-border transition-colors flex items-center gap-1 min-h-[38px]"
+              title="Sair / Trocar de Conta"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="text-[11px] font-display uppercase tracking-wider font-semibold hidden sm:inline">
+                Sair
+              </span>
+            </button>
           </div>
         </div>
       </div>

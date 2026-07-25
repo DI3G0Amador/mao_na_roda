@@ -15,6 +15,14 @@ export interface Oficina {
   endereco?: string;
 }
 
+export interface UsuarioOficina {
+  id: string;
+  oficina_id: string;
+  nome: string;
+  email: string;
+  funcao: 'admin' | 'mecanico' | 'recepcao';
+}
+
 export interface Cliente {
   id: string;
   oficina_id?: string;
@@ -76,7 +84,7 @@ export interface OrdemServico {
   defeito_relatado: string;
   diagnostico_tecnico?: string;
   valor_total: number;
-  garantia_dias: number; // ex: 90
+  garantia_dias: number;
   data_garantia_limite: string;
   data_abertura: string;
   data_previsao?: string;
