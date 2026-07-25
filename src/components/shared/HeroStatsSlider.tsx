@@ -1,7 +1,7 @@
 import React from 'react';
 import { DashboardStats } from '@/types';
 import { formatBRL } from '@/lib/utils';
-import { Wrench, Clock, DollarSign, Car } from 'lucide-react';
+import { Wrench, Clock, DollarSign } from 'lucide-react';
 
 interface HeroStatsSliderProps {
   stats: DashboardStats;
@@ -37,11 +37,12 @@ export const HeroStatsSlider: React.FC<HeroStatsSliderProps> = ({ stats }) => {
 
   return (
     <div className="w-full py-1">
-      <div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto md:overflow-visible pb-2 md:pb-0 snap-x snap-mandatory scrollbar-none px-1">
+      {/* Grid stacked on Mobile (grid-cols-1) and 3-columns on PC (md:grid-cols-3) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 md:gap-3 w-full">
         {cards.map((card, idx) => (
           <div
             key={idx}
-            className={`min-w-[78vw] sm:min-w-[260px] md:min-w-0 snap-center rounded-2xl p-3 md:px-4 md:py-3 border bg-gradient-to-br ${card.gradient} shadow-md flex items-center justify-between gap-3 hover:border-primary/50 transition-all`}
+            className={`w-full rounded-2xl p-3 md:px-4 md:py-3 border bg-gradient-to-br ${card.gradient} shadow-md flex items-center justify-between gap-3 hover:border-primary/50 transition-all`}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="p-2.5 rounded-xl bg-surface/80 border border-border flex-none">
@@ -59,10 +60,10 @@ export const HeroStatsSlider: React.FC<HeroStatsSliderProps> = ({ stats }) => {
                 </div>
 
                 <div className="flex items-baseline justify-between gap-2 mt-0.5">
-                  <div className="text-xl md:text-2xl font-bold font-display text-text-main tracking-tight leading-none">
+                  <div className="text-lg md:text-2xl font-bold font-display text-text-main tracking-tight leading-none">
                     {card.value}
                   </div>
-                  <span className="text-[10px] text-text-muted/70 truncate hidden sm:inline">
+                  <span className="text-[10px] text-text-muted/70 truncate">
                     {card.subtitle}
                   </span>
                 </div>
