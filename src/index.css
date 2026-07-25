@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Chakra Petch', sans-serif;
+
+  --color-background: #121214;
+  --color-surface: #1E1E22;
+  --color-surface-card: #26262B;
+  --color-border: #3A3A42;
+
+  --color-primary: #D97706;
+  --color-primary-hover: #B45309;
+  --color-primary-glow: rgba(217, 119, 6, 0.15);
+
+  --color-steel: #94A3B8;
+  --color-grease: #18181B;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+
+  --color-text-main: #F3F4F6;
+  --color-text-muted: #9CA3AF;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Glassmorphism Industrial Utility */
+.glass-panel {
+  background-color: rgba(38, 38, 43, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(58, 58, 66, 0.6);
+}
+
+.glass-card {
+  background-color: rgba(30, 30, 34, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(58, 58, 66, 0.5);
+}
+
+.glow-primary {
+  box-shadow: 0 0 20px -3px rgba(217, 119, 6, 0.35);
+}
+
+.glow-primary-sm {
+  box-shadow: 0 0 10px 0px rgba(217, 119, 6, 0.25);
+}
+
+/* Scanner Animation Line */
+@keyframes scanline {
+  0% {
+    top: 0%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.8;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 2.2s ease-in-out infinite alternate;
+}
+
+/* Custom Scrollbar for Mobile touch containers */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #121214;
+}
+::-webkit-scrollbar-thumb {
+  background: #3A3A42;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D97706;
+}

@@ -1,0 +1,23 @@
+{
+  "short_name": "MãoNaRoda",
+  "name": "Mão na Roda — Gestão para Oficinas",
+  "description": "Sistema de gestão de ordens de serviço mobile-first para oficinas mecânicas.",
+  "icons": [
+    {
+      "src": "/pwa-icon.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-full.png",
+      "type": "image/png",
+      "sizes": "450x490"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#121214",
+  "theme_color": "#121214",
+  "display": "standalone",
+  "orientation": "portrait"
+}
