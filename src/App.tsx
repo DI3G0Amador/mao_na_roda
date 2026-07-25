@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { LandingPage } from '@/pages/LandingPage';
 import { Dashboard } from '@/pages/Dashboard';
 import { OSWizard } from '@/pages/OSWizard';
@@ -18,6 +19,7 @@ export function App() {
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/estoque" element={<EstoquePage />} />
       </Routes>
+      <Analytics />
     </BrowserRouter>
   );
 }
