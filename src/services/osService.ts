@@ -137,7 +137,15 @@ export const osService = {
     const list = this.getOficinas();
     const activeId = localStorage.getItem(LOCAL_STORAGE_OFICINA_ACTIVE);
     const found = list.find((o) => o.id === activeId);
-    return found || list[0];
+    if (found) return found;
+
+    const activeUser = this.getActiveUser();
+    if (activeUser) {
+      const userOficina = list.find((o) => o.id === activeUser.oficina_id);
+      if (userOficina) return userOficina;
+    }
+
+    return list[0];
   },
 
   setActiveOficina(oficinaId: string): void {
@@ -148,9 +156,9 @@ export const osService = {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_USER_ACTIVE);
       if (stored) return JSON.parse(stored);
-      return INITIAL_USERS[0];
+      return null;
     } catch {
-      return INITIAL_USERS[0];
+      return null;
     }
   },
 
@@ -289,6 +297,7 @@ export const osService = {
 
   logoutUser(): void {
     localStorage.removeItem(LOCAL_STORAGE_USER_ACTIVE);
+    localStorage.removeItem(LOCAL_STORAGE_OFICINA_ACTIVE);
     if (isSupabaseConfigured && supabase) {
       supabase.auth.signOut().catch(console.warn);
     }

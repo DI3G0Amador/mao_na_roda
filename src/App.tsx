@@ -7,17 +7,53 @@ import { OSWizard } from '@/pages/OSWizard';
 import { OSDetails } from '@/pages/OSDetails';
 import { ClientesPage } from '@/pages/ClientesPage';
 import { EstoquePage } from '@/pages/EstoquePage';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 
 export function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/patio" element={<Dashboard />} />
-        <Route path="/os/nova" element={<OSWizard />} />
-        <Route path="/os/:id" element={<OSDetails />} />
-        <Route path="/clientes" element={<ClientesPage />} />
-        <Route path="/estoque" element={<EstoquePage />} />
+        <Route
+          path="/patio"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/os/nova"
+          element={
+            <ProtectedRoute>
+              <OSWizard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/os/:id"
+          element={
+            <ProtectedRoute>
+              <OSDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clientes"
+          element={
+            <ProtectedRoute>
+              <ClientesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/estoque"
+          element={
+            <ProtectedRoute>
+              <EstoquePage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       <Analytics />
     </BrowserRouter>
