@@ -103,14 +103,14 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Status Filters Horizontal Bar */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none text-xs font-display uppercase tracking-wider">
+          {/* Status Filters Bar (Stacked on Mobile, Horizontal on Desktop) */}
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 text-xs font-display uppercase tracking-wider">
             <button
               onClick={() => {
                 triggerHaptic('light');
                 setActiveTab('todas');
               }}
-              className={`px-3.5 py-2 rounded-xl whitespace-nowrap border transition-all ${
+              className={`w-full sm:w-auto px-3.5 py-2.5 sm:py-2 rounded-xl text-center border transition-all ${
                 activeTab === 'todas'
                   ? 'bg-primary text-black font-bold border-primary shadow-md'
                   : 'bg-surface text-text-muted border-border hover:text-text-main'
@@ -123,7 +123,7 @@ export const Dashboard: React.FC = () => {
                 triggerHaptic('light');
                 setActiveTab('em_diagnostico');
               }}
-              className={`px-3.5 py-2 rounded-xl whitespace-nowrap border transition-all ${
+              className={`w-full sm:w-auto px-3.5 py-2.5 sm:py-2 rounded-xl text-center border transition-all ${
                 activeTab === 'em_diagnostico'
                   ? 'bg-amber-500/20 text-amber-400 font-bold border-amber-500'
                   : 'bg-surface text-text-muted border-border hover:text-text-main'
@@ -136,7 +136,7 @@ export const Dashboard: React.FC = () => {
                 triggerHaptic('light');
                 setActiveTab('aguardando_aprovacao');
               }}
-              className={`px-3.5 py-2 rounded-xl whitespace-nowrap border transition-all ${
+              className={`w-full sm:w-auto px-3.5 py-2.5 sm:py-2 rounded-xl text-center border transition-all ${
                 activeTab === 'aguardando_aprovacao'
                   ? 'bg-yellow-500/20 text-yellow-400 font-bold border-yellow-500'
                   : 'bg-surface text-text-muted border-border hover:text-text-main'
@@ -149,7 +149,7 @@ export const Dashboard: React.FC = () => {
                 triggerHaptic('light');
                 setActiveTab('concluido');
               }}
-              className={`px-3.5 py-2 rounded-xl whitespace-nowrap border transition-all ${
+              className={`w-full sm:w-auto px-3.5 py-2.5 sm:py-2 rounded-xl text-center border transition-all ${
                 activeTab === 'concluido'
                   ? 'bg-emerald-500/20 text-emerald-400 font-bold border-emerald-500'
                   : 'bg-surface text-text-muted border-border hover:text-text-main'
